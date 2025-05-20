@@ -16,18 +16,26 @@ const Footer: React.FC = () => {
           </div>
           <div className="px-5 py-2">
             <Link
-              to="/blog"
+              to="/contact"
               className="text-base text-gray-500 hover:text-gray-900"
             >
-              Blog
+              Contact
             </Link>
           </div>
           <div className="px-5 py-2">
             <Link
-              to="/jobs"
+              to="/products"
               className="text-base text-gray-500 hover:text-gray-900"
             >
-              Jobs
+              Shop
+            </Link>
+          </div>
+          <div className="px-5 py-2">
+            <Link
+              to="/blog"
+              className="text-base text-gray-500 hover:text-gray-900"
+            >
+              Blog
             </Link>
           </div>
           <div className="px-5 py-2">
@@ -44,14 +52,6 @@ const Footer: React.FC = () => {
               className="text-base text-gray-500 hover:text-gray-900"
             >
               Accessibility
-            </Link>
-          </div>
-          <div className="px-5 py-2">
-            <Link
-              to="/partners"
-              className="text-base text-gray-500 hover:text-gray-900"
-            >
-              Partners
             </Link>
           </div>
         </nav>
@@ -114,7 +114,7 @@ const Footer: React.FC = () => {
           </a>
         </div>
         <p className="mt-8 text-center text-base text-gray-400">
-          &copy; {new Date().getFullYear()} Dhaba517. All rights reserved.
+          &copy; {new Date().getFullYear()} Amaze Clothing. All rights reserved.
         </p>
       </div>
     </footer>

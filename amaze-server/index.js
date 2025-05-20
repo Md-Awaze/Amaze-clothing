@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import productRoutes from './routes/productRoutes.js';
+import contactRoutes from './routes/contactRoutes.js';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/products', productRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
@@ -26,7 +28,7 @@ app.get('/health', (req, res) => {
 });
 
 // Connect to MongoDB
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/amaze';
 
 mongoose.connect(MONGO_URI)
