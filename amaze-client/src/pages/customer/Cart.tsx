@@ -1,6 +1,8 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { useCart } from "../../context/CartContext";
+import { validateCart } from "../../services/api";
+import { useState } from "react";
 
 interface CartItem {
 	_id: string;
@@ -13,6 +15,8 @@ interface CartItem {
 }
 
 const Cart = () => {
+	const navigate = useNavigate();
+	const [validationError, setValidationError] = useState<string | null>(null);
 	const {
 		cartItems,
 		updateQuantity,
@@ -28,6 +32,28 @@ const Cart = () => {
 	const tax = subtotal * 0.1; // 10% tax
 	const total = subtotal + shipping + tax;
 
+	const handleCheckoutClick = async (
+		e: React.MouseEvent<HTMLAnchorElement>
+	) => {
+		e.preventDefault();
+		if (cartItems.length === 0) return;
+
+		try {
+			const result = await validateCart(cartItems);
+			if (result.isValid) {
+				navigate("/checkout");
+			} else {
+				setValidationError(
+					result.errors?.join("\n") ||
+						result.message ||
+						"Cart validation failed"
+				);
+			}
+		} catch (error) {
+			setValidationError("Failed to validate cart");
+		}
+	};
+
 	return (
 		<div className="bg-white">
 			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -35,6 +61,14 @@ const Cart = () => {
 					<h1 className="text-3xl font-bold tracking-tight text-gray-900">
 						Shopping Cart
 					</h1>
+
+					{validationError && (
+						<div className="mt-4 p-4 rounded-md bg-red-50 border border-red-200">
+							<p className="text-sm text-red-600">
+								{validationError}
+							</p>
+						</div>
+					)}
 
 					<div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
 						<div className="lg:col-span-7">
@@ -220,11 +254,7 @@ const Cart = () => {
 											? "bg-gray-400 cursor-not-allowed"
 											: "bg-indigo-600 hover:bg-indigo-700"
 									} px-4 py-3 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50`}
-									onClick={(e) => {
-										if (cartItems.length === 0) {
-											e.preventDefault();
-										}
-									}}
+									onClick={handleCheckoutClick}
 								>
 									Checkout
 								</Link>
