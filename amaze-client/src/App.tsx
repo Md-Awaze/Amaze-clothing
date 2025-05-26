@@ -12,6 +12,8 @@ import ForgotPassword from './pages/customer/ForgotPassword';
 import ResetPassword from './pages/customer/ResetPassword';
 import Profile from './pages/customer/Profile';
 import NotFound from './pages/customer/NotFound';
+import AboutUs from './pages/customer/AboutUs';
+import Contact from './pages/customer/Contact';
 
 const App: React.FC = () => {
   return (
@@ -27,6 +29,8 @@ const App: React.FC = () => {
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="about" element={<AboutUs />} />
+        <Route path="contact" element={<Contact />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
