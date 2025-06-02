@@ -1,25 +1,34 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
+import { updateUserProfile } from '../../services/api';
+// UserCircleIcon will be used when implementing the avatar feature
+// import { UserCircleIcon } from '@heroicons/react/24/outline';
 
 interface ProfileFormData {
   name: string;
   email: string;
   phone: string;
   address: string;
+  avatar?: string;
 }
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuthContext();
+  const { user, updateUser, isAuthenticated } = useAuthContext();
   const [formData, setFormData] = useState<ProfileFormData>({
     name: '',
     email: '',
     phone: '',
     address: '',
+    avatar: '',
   });
+  // Using underscore prefix to indicate intentionally unused variables
+  const [_isEditing, setIsEditing] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState('');
+  // Avatar state will be added when implementing avatar functionality
 
   useEffect(() => {
     if (user) {
@@ -28,6 +37,7 @@ const Profile = () => {
         email: user.email || '',
         phone: user.phone || '',
         address: user.address || '',
+        avatar: user.avatar || '',
       });
     }
   }, [user]);
@@ -37,17 +47,33 @@ const Profile = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Avatar functionality will be implemented in a future update
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
+    setSuccess('');
+    setIsLoading(true);
 
     try {
-      // Implement profile update logic here
-      console.log('Profile update submitted:', formData);
-      setSuccess(true);
+      // Call the API to update the user profile
+      const updatedUser = await updateUserProfile({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address
+      });
+      
+      // Update the user context with the new data
+      updateUser(updatedUser);
+      
+      setSuccess('Profile updated successfully!');
+      setIsEditing(false);
     } catch (err) {
       setError('Failed to update profile. Please try again.');
+      console.error('Profile update error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 

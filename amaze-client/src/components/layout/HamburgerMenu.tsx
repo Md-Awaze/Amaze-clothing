@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { XMarkIcon, UserCircleIcon, ArrowRightOnRectangleIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { useAuthContext } from '../../context/AuthContext';
 import logo from '../../assets/amaze-logo.png';
 
 const navLinks = [
@@ -21,6 +22,14 @@ interface HamburgerMenuProps {
 
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ open, onClose }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuthContext();
+
+  const handleLogout = () => {
+    logout();
+    onClose();
+    navigate('/');
+  };
 
   return (
     <div
@@ -45,28 +54,83 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({ open, onClose }) => {
         <div className="flex flex-col items-center mb-2">
           <img src={logo} alt="Amaze Logo" className="h-14 w-14 object-contain mb-2" />
         </div>
-        <div className="flex flex-col gap-4 mt-4">
-          {navLinks.map((link, idx) => {
-            const isActive = location.pathname === link.path || (link.path.startsWith('/products') && location.pathname.startsWith('/products') && location.search.includes(link.path.split('=')[1] || ''));
+        {isAuthenticated && (
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <UserCircleIcon className="h-10 w-10 text-gray-400" />
+              <div>
+                <p className="font-medium text-gray-900">{user?.name}</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Link
+                to="/dashboard"
+                className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                onClick={onClose}
+              >
+                <UserIcon className="h-4 w-4 mr-2" />
+                Dashboard
+              </Link>
+              <Link
+                to="/profile"
+                className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
+                onClick={onClose}
+              >
+                <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                Profile Settings
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left flex items-center px-3 py-2 text-sm text-red-600 hover:bg-gray-100 rounded"
+              >
+                <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+                Sign out
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-1 mt-2">
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path ||
+              (link.path.startsWith('/products') &&
+                location.pathname.startsWith('/products') &&
+                location.search.includes(link.path.split('=')[1] || ''));
             return (
               <Link
                 key={link.name}
                 to={link.path}
+                className={`px-4 py-3 rounded-lg font-medium transition-colors flex items-center ${isActive ? 'bg-primary-50 text-primary-700' : 'text-gray-700 hover:bg-gray-50'}`}
                 onClick={onClose}
-                className={`text-lg font-semibold px-2 py-1 rounded transition-all duration-300 transform
-                  ${isActive ? 'border-b-2 border-black text-black' : 'text-gray-700 hover:text-black hover:bg-gray-100'}
-                  ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}
-                `}
-                style={{ transitionDelay: open ? `${idx * 60 + 100}ms` : '0ms' }}
               >
                 {link.name}
               </Link>
             );
           })}
         </div>
+
+        {!isAuthenticated && (
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <Link
+              to="/login"
+              className="block w-full text-center px-4 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 mb-3"
+              onClick={onClose}
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/register"
+              className="block w-full text-center px-4 py-2.5 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700"
+              onClick={onClose}
+            >
+              Create account
+            </Link>
+          </div>
+        )}
       </nav>
     </div>
   );
 };
 
-export default HamburgerMenu; 
+export default HamburgerMenu;

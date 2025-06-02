@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Bars3Icon } from '@heroicons/react/24/outline';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bars3Icon, UserCircleIcon, ArrowRightOnRectangleIcon, UserIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { useAuthContext } from '../../context/AuthContext';
 import HamburgerMenu from './HamburgerMenu';
 import NavIcons from './NavIcons';
 import logo from '../../assets/amaze-logo.png';
@@ -8,6 +9,34 @@ import logo from '../../assets/amaze-logo.png';
 const Navbar: React.FC = () => {
   const [show, setShow] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuthContext();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setIsProfileOpen(false);
+    navigate('/');
+  };
+
+  const toggleProfileMenu = () => {
+    setIsProfileOpen(!isProfileOpen);
+  };
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isProfileOpen && !target.closest('.profile-menu')) {
+        setIsProfileOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isProfileOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,8 +82,72 @@ const Navbar: React.FC = () => {
               <span className="ml-2 text-xs font-semibold text-gray-700 tracking-widest">CLOTHING</span>
             </Link>
 
-            {/* Right: Nav Icons */}
-            <NavIcons />
+            {/* Right: Icons and User Menu */}
+            <div className="flex items-center gap-4">
+              <NavIcons />
+              
+              {isAuthenticated ? (
+                <div className="relative profile-menu">
+                  <button
+                    onClick={toggleProfileMenu}
+                    className="flex items-center gap-2 text-gray-700 hover:text-primary-600 transition-colors"
+                    aria-label="User menu"
+                  >
+                    <UserCircleIcon className="h-7 w-7" />
+                    <span className="hidden md:inline font-medium">
+                      {user?.name?.split(' ')[0] || 'Account'}
+                    </span>
+                  </button>
+                  
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+                        <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                      </div>
+                      <Link
+                        to="/dashboard"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <UserIcon className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Link>
+                      <Link
+                        to="/profile"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
+                        <Cog6ToothIcon className="h-4 w-4 mr-2" />
+                        Profile Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+                        Sign out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="hidden md:flex items-center gap-4">
+                  <Link
+                    to="/login"
+                    className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors font-medium"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
