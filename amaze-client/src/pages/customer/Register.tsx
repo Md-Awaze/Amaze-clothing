@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthContext } from '../../context/AuthContext';
+import { registerUser } from '../../services/api';
 
 interface RegisterFormData {
   name: string;
@@ -11,7 +12,7 @@ interface RegisterFormData {
 
 const Register = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, setUser } = useAuthContext();
   const [formData, setFormData] = useState<RegisterFormData>({
     name: '',
     email: '',
@@ -19,6 +20,7 @@ const Register = () => {
     confirmPassword: '',
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,13 +36,30 @@ const Register = () => {
       return;
     }
 
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      // Implement registration logic here
-      console.log('Registration form submitted:', formData);
-      // If registration is successful, redirect to home page
-      navigate('/');
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+      const response = await registerUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      if (response.user) {
+        setUser(response.user);
+        localStorage.setItem('token', response.token);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      console.error('Registration error:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -66,7 +85,7 @@ const Register = () => {
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-4">
+            <div className="rounded-md bg-red-50 p-4 mb-4">
               <div className="flex">
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800">{error}</h3>
@@ -162,7 +181,8 @@ const Register = () => {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              disabled={isLoading}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${isLoading ? 'bg-primary-400' : 'bg-primary-600 hover:bg-primary-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
             >
               Create account
             </button>
